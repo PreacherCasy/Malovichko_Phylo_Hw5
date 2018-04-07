@@ -1,0 +1,51 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Malovichko_Malovichko.md</title><script type="text/javascript">
+//<![CDATA[
+window.__cfRocketOptions = {byc:0,p:0,petok:"583ca0696e0a92f1a6ff71975941018748348acc-1523106581-1800"};
+//]]>
+</script>
+<script type="text/javascript" src="https://ajax.cloudflare.com/cdn-cgi/scripts/935cb224/cloudflare-static/rocket.min.js"></script>
+<style></style></head><body id="preview">
+<h2><a id="Hw5_Malovichko_0"></a>Hw5_Malovichko</h2>
+<h3><a id="__3"></a>Цель работы</h3>
+<p>На этой неделе мы познакомимся с построением филогенетических деревьев методами расстояний: UPGMA и NJ. Данные методы основаны работают скорее как кластеризаторы данных и проигрывают методам, основанным на биологически осмысленных эвристиках (MP, ML). Основным преимуществом методов расстояний является их скорость; при помощи них можно понять приблизительную топологию дерева при наличии качественного выравнивания слабо отличающихся последовательностей.</p>
+<h2><a id="__6"></a>Исходные данные</h2>
+<p>В качестве исходных данных использовалось выравнивание гена терминатора трансляции SUP35 дрожжей <em>S.cerevisiae</em>, выполненное при помощи алгоритма <em>Prank</em>.</p>
+<h2><a id="_1_9"></a>Задание 1.</h2>
+<p>После некоторых попыток разобраться с ete3, MEGA7 (CC-интерфейс) и Bio.Phylo мы решили воспользоваться онлайн-интерфейсом на сайте <a href="https://www.ebi.ac.uk/Tools/phylogeny/simple_phylogeny/">Европейского института биоинформатики</a>. Для обоих построений использовались стандартные настройки.</p>
+<h2><a id="_2_12"></a>Задание 2.</h2>
+<p>Визуализацию деревьев см. в репозитории в данном репозитории.<br>
+Если топология UPGMA-дерева подтверждает использование Kla-Agos-филы в качестве аутгруппы, то в случае NJ в основании дерева лежит политомический узел с двумя аутгруппами (SUP35_Sarb_H-6_chrXIII_CM001575:0.065077 и<br>
+SUP35_Seub_CBS12357_chr_II_IV_DF968535:0.065077):0.06897), при этом монофилия клады сохраняется в обоих случаях. Наличие политомического узла предполагает, что из двух имеющихся именно NJ-дерево является неукорененным. Так как BioNJ принято считать более прогрессивным методом, мы можем предположить, что <em>Kla-Agos</em> является сомнительным враиантом аутгруппы.</p>
+<h2><a id="_3_17"></a>Задание 3</h2>
+<p>Далее мы запустили jModelTest2 в двух разных форматах. Для начала мы воспользовались GUI-версией (см. скрин в репозитории) для 88 моделей (11 substitution schemes). Затем мы решили, что GUI is for pussies и воспользовались следующей командой (оба информационных критерия + включение в анализ моделей с  proportion invariable sites и unequals base frecuencies:</p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> ~/Downloads/jmodeltest-<span class="hljs-number">2.1</span>.<span class="hljs-number">10</span>/ ; java -jar jModelTest.jar <span class="hljs-operator">-d</span> &lt;input&gt; <span class="hljs-operator">-a</span> -i <span class="hljs-operator">-f</span> -o -AIC -BIC -o &lt;output&gt;
+</code></pre>
+<p>HTML-логи приложены в репозитории. По результатам работы программы в качестве оптимальной модели была выбрана GTR+G.</p>
+<h2><a id="_4_26"></a>Задание 4</h2>
+<p>PartitionFinder работает с форматом PHYLIP. Для конвертирования мы воспользовались <a href="http://sequenceconversion.bugaco.com/converter/biology/sequences/fasta_to_phylip.php">SequenceConverter</a> (fasta -&gt; phylip, alphabet = DNA). Однако из-за ограничения на количество символов исчезла уникальность имен для некоторых последовательностей. Мы решили эту проблему при помощи gsub:</p>
+<pre><code class="language-bash">sed -i <span class="hljs-string">'s/SUP35_//'</span> SUP35_aln.best.fas
+</code></pre>
+<p>Или:</p>
+<pre><code class="language-bash"> cat SUP35_aln.best.fas | awk <span class="hljs-string">'($0 ~/SUP35_/) {sub("SUP35_","")}'</span>
+</code></pre>
+<p>Теперь все очень здорово, но затем выясняется, что нам был нужен relaxed Phylip вместо стандартного. Эту проблему мы решили при помощи <a href="http://aligner.azurewebsites.net/inputform.html#">другого конвертера</a>.</p>
+<h2><a id="_5_38"></a>Задание 5</h2>
+<p>Запустим PartitionFinder при помощи следующей команды. Поместим файл с выравниванием и файл с партициями в папку for_analysis:</p>
+<pre><code class="language-bash">python2.<span class="hljs-number">7</span> /home/reverend_casy/partitionfinder-<span class="hljs-number">2.1</span>.<span class="hljs-number">1</span>/PartitionFinder.py /home/reverend_casy/Downloads/Phylo_Proj_5/<span class="hljs-keyword">for</span>_analysis
+</code></pre>
+<p>Используем только первую схему партиционирования и “жадный” поиск:</p>
+<pre><code>Gene = 1-2460;
+search = greedy; 
+</code></pre>
+<p>Результат - модель TRN+I+G, что отличается от показаний jModelTest.</p>
+<h2><a id="_6_50"></a>Задание 6</h2>
+<p>Для выполнения этой задачи достаточно просто убрать из файла с партициями search=greedy. Voila!<br>
+Лучшая схема поиска - separate: идущие последовательно позиции для N- и C-терминальных доменов<br>
+(NM_pos1) (NM_pos2) (NM_pos3) (C_pos1) (C_pos2) (C_pos3)</p>
+<h2><a id="_55"></a>Выводы</h2>
+<ol>
+<li>Алгоритмы, основанные на методах расстояний, подходят для наборов сравнительно идентичны последовательностей. Кроме того, результаты двух алгоритмов значительно различаются между собой: в NJ-дереве появляется политомический узел и теряется положение некой клады как аутгруппы.</li>
+<li>Мета-анализ, включающий результаты использовавших другие настройки однокурсников, показывает, что поиск модели эволюции как в jModelTest2, так и в PartitionFinder, зависит от используемых критериев (Aikike inference или Bayesian inference), количеством схем замещения, включением в анализ специфических моделей и т.д.</li>
+</ol>
+
+</body></html>
